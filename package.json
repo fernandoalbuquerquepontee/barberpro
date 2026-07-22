@@ -2,6 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +11,10 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@prisma/config": "^7.9.0",
     "@types/node": "^26.1.1",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.9.0",
     "typescript": "^7.0.2"
   },
   "dependencies": {
