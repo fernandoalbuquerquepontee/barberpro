@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +20,11 @@
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-simple-import-sort": "^12.1.1",
+    "git-commit-msg-linter": "^5.0.8",
     "globals": "^15.15.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.9.6",
     "prisma": "^7.9.0",
     "tsx": "^4.23.1",
     "typescript": "^5.9.3",
