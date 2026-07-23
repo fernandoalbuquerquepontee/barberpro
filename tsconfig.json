@@ -1,10 +1,15 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
+    "module": "esnext",
     "target": "es2024",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "strict": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
     "outDir": "./dist",
     "types": [
       "node"

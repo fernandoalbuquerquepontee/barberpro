@@ -12,8 +12,19 @@ import {
 } from "fastify-type-provider-zod";
 import z from "zod";
 
+import { auth } from "./lib/auth";
+
 const app = Fastify({
   logger: true,
+});
+
+await app.register(fastifyCors, {
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+  ],
+  credentials: true,
 });
 
 app.setValidatorCompiler(validatorCompiler);
@@ -46,6 +57,11 @@ await app.register(fastifyApiReference, {
         slug: "barberpro-api",
         url: "/swagger.json",
       },
+      {
+        title: "Auth API",
+        slug: "auth-api",
+        url: "/api/auth/open-api/generate-schema",
+      },
     ],
   },
 });
@@ -59,11 +75,6 @@ app.withTypeProvider<ZodTypeProvider>().route({
   handler: async () => {
     return app.swagger();
   },
-});
-
-await app.register(fastifyCors, {
-  origin: ["http://localhost:3000"],
-  credentials: true,
 });
 
 app.withTypeProvider<ZodTypeProvider>().route({
@@ -82,6 +93,38 @@ app.withTypeProvider<ZodTypeProvider>().route({
     return {
       message: "Hello world!!!!!!",
     };
+  },
+});
+
+app.route({
+  method: ["GET", "POST"],
+  url: "/api/auth/*",
+  async handler(request, reply) {
+    try {
+      const url = new URL(request.url, `http://${request.headers.host}`);
+
+      const headers = new Headers();
+      Object.entries(request.headers).forEach(([key, value]) => {
+        if (value) headers.append(key, value.toString());
+      });
+
+      const req = new Request(url.toString(), {
+        method: request.method,
+        headers,
+        ...(request.body ? { body: JSON.stringify(request.body) } : {}),
+      });
+      const response = await auth.handler(req);
+      reply.status(response.status);
+      response.headers.forEach((value, key) => reply.header(key, value));
+      reply.send(response.body ? await response.text() : null);
+    } catch (error) {
+      app.log.error(error);
+      app.log.error(error);
+      reply.status(500).send({
+        error: "Internal authentication error",
+        code: "AUTH_FAILURE",
+      });
+    }
   },
 });
 
