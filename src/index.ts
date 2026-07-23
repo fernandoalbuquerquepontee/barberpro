@@ -1,5 +1,8 @@
 import "dotenv/config";
 
+import fastifyCors from "@fastify/cors";
+import fastifySwagger from "@fastify/swagger";
+import fastifyApiReference from "@scalar/fastify-api-reference";
 import Fastify from "fastify";
 import {
   jsonSchemaTransform,
@@ -8,9 +11,6 @@ import {
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import z from "zod";
-import fastifyApiReference from "@scalar/fastify-api-reference";
-import fastifySwagger from "@fastify/swagger";
-import fastifyCors from "@fastify/cors";
 
 const app = Fastify({
   logger: true,
