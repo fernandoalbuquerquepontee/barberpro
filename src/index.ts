@@ -13,6 +13,7 @@ import {
 import z from "zod";
 
 import { auth } from "./lib/auth";
+import { barberRoutes } from "./routes/barbers";
 
 const app = Fastify({
   logger: true,
@@ -76,6 +77,8 @@ app.withTypeProvider<ZodTypeProvider>().route({
     return app.swagger();
   },
 });
+
+await app.register(barberRoutes, { prefix: "/barbers" });
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
