@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { ErrorSchema } from "@/schemas";
 import { CreateAppointment } from "@/usecases/CreateAppointment";
 import { GetAppointmentsHistory } from "@/usecases/GetAppointmentsHistory";
+import { GetAvailableHours } from "@/usecases/GetAvailableHours";
 
 export const appointmentRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -20,7 +21,12 @@ export const appointmentRoutes = (app: FastifyInstance) => {
         serviceId: z.uuid(),
         userId: z.string(),
         barberId: z.uuid(),
-        date: z.coerce.date(),
+        date: z.string().transform((val) => {
+          const hasTimezone = /(Z|[+-]\d{2}:\d{2})$/.test(val);
+          const dateStringWithTimezone = hasTimezone ? val : `${val}-03:00`;
+
+          return new Date(dateStringWithTimezone);
+        }),
         status: z.enum(Status),
       }),
       response: {
@@ -111,6 +117,42 @@ export const appointmentRoutes = (app: FastifyInstance) => {
         const result = await getAppointmentsHistory.execute({ userId });
 
         return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/appointments/hours",
+    schema: {
+      tags: ["Appointments"],
+      summary: "Get available hours for appointments",
+      querystring: z.object({
+        date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato deve ser YYYY-MM-DD"),
+      }),
+      response: {
+        200: z.array(z.string()),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { date } = request.query;
+
+        const getAvailableHours = new GetAvailableHours();
+
+        const result = await getAvailableHours.execute({ date });
+        return reply.status(200).send(result.hours);
       } catch (error) {
         app.log.error(error);
         return reply.status(500).send({
