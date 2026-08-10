@@ -1,4 +1,4 @@
-import { parseISO } from "date-fns";
+import { isPast, parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 
 import { TIME_SLOTS } from "@/constants";
@@ -37,6 +37,9 @@ export class GetAvailableHours {
     );
 
     const availableHours = TIME_SLOTS.filter((slot) => {
+      const slotDate = parseISO(`${date}T${slot}:00.000-03:00`);
+      if (isPast(slotDate)) return false;
+
       const count = bookedHours.filter((hour) => hour === slot).length;
       return count < barbersCount;
     });
