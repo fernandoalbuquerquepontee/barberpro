@@ -10,7 +10,6 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import z from "zod";
 
 import { auth } from "./lib/auth";
 import { appointmentRoutes } from "./routes/appointments";
@@ -81,25 +80,6 @@ app.withTypeProvider<ZodTypeProvider>().route({
 
 await app.register(barberRoutes, { prefix: "/barbers" });
 await app.register(appointmentRoutes, { prefix: "/appointments" });
-
-app.withTypeProvider<ZodTypeProvider>().route({
-  method: "GET",
-  url: "/",
-  schema: {
-    description: "Hello world endpoint",
-    tags: ["Hello World"],
-    response: {
-      200: z.object({
-        message: z.string(),
-      }),
-    },
-  },
-  handler: () => {
-    return {
-      message: "Hello world!!!!!!",
-    };
-  },
-});
 
 app.route({
   method: ["GET", "POST"],
