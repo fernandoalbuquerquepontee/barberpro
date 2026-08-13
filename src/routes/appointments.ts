@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { ErrorSchema } from "@/schemas";
 import { CreateAppointment } from "@/usecases/CreateAppointment";
 import { GetAppointmentsHistory } from "@/usecases/GetAppointmentsHistory";
+import { GetAvailableBarbers } from "@/usecases/GetAvailableBarbers";
 import { GetAvailableHours } from "@/usecases/GetAvailableHours";
 
 export const appointmentRoutes = (app: FastifyInstance) => {
@@ -153,6 +154,53 @@ export const appointmentRoutes = (app: FastifyInstance) => {
 
         const result = await getAvailableHours.execute({ date });
         return reply.status(200).send(result.hours);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/appointments/available-barbers",
+    schema: {
+      tags: ["Appointments"],
+      sumary: "Get available barbers for a specific date and time",
+      querystring: z.object({
+        date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato deve ser YYYY-MM-DD"),
+        time: z.string().regex(/^\d{2}:\d{2}$/, "Formato deve ser HH:mm"),
+      }),
+      response: {
+        200: z.array(
+          z.object({
+            id: z.uuid(),
+            name: z.string(),
+            specialty: z.string(),
+            avatarUrl: z.string().nullable(),
+            createdAt: z.coerce.date(),
+            updatedAt: z.coerce.date(),
+          }),
+        ),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { date, time } = request.query;
+
+        const getAvailableBarbers = new GetAvailableBarbers();
+
+        const result = await getAvailableBarbers.execute({ date, time });
+
+        return reply.status(200).send(result.barbers);
       } catch (error) {
         app.log.error(error);
         return reply.status(500).send({
