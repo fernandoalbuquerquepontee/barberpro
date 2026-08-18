@@ -148,6 +148,17 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
         const { date } = request.query;
 
         const getAvailableHours = new GetAvailableHours();
@@ -194,6 +205,17 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
         const { date, time } = request.query;
 
         const getAvailableBarbers = new GetAvailableBarbers();
