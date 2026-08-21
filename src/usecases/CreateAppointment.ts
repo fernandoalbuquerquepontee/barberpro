@@ -1,3 +1,4 @@
+import { CannotCreateAppointmentInThePastError } from "@/errors/appointment";
 import type { Status } from "@/generated/prisma";
 import { prisma } from "@/lib/db";
 
@@ -23,7 +24,7 @@ export class CreateAppointment {
     const now = new Date();
 
     if (input.date < now) {
-      throw new Error("Cannot create an appointment in the past");
+      throw new CannotCreateAppointmentInThePastError();
     }
 
     const appointment = await prisma.appointment.create({
