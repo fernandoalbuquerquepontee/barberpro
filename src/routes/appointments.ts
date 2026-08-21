@@ -3,6 +3,10 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
+import {
+  CannotCreateAppointmentInThePastError,
+  CannotCreateAppointmentInTheSameTimeError,
+} from "@/errors/appointment";
 import { Status } from "@/generated/prisma";
 import { auth } from "@/lib/auth";
 import { ErrorSchema } from "@/schemas";
@@ -42,6 +46,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
         400: ErrorSchema,
         401: ErrorSchema,
         404: ErrorSchema,
+        409: ErrorSchema,
         500: ErrorSchema,
       },
     },
@@ -64,6 +69,20 @@ export const appointmentRoutes = (app: FastifyInstance) => {
 
         return reply.status(201).send(result);
       } catch (error) {
+        if (error instanceof CannotCreateAppointmentInThePastError) {
+          return reply.status(400).send({
+            error: error.message,
+            code: "PAST_DATE_ERROR",
+          });
+        }
+
+        if (error instanceof CannotCreateAppointmentInTheSameTimeError) {
+          return reply.status(409).send({
+            error: error.message,
+            code: "TIME_CONFLICT_ERROR",
+          });
+        }
+
         app.log.error(error);
         return reply.status(500).send({
           error: "Internal Server Error",

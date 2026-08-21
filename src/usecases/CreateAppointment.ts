@@ -1,4 +1,9 @@
-import { CannotCreateAppointmentInThePastError } from "@/errors/appointment";
+import { formatInTimeZone } from "date-fns-tz";
+
+import {
+  CannotCreateAppointmentInThePastError,
+  CannotCreateAppointmentInTheSameTimeError,
+} from "@/errors/appointment";
 import type { Status } from "@/generated/prisma";
 import { prisma } from "@/lib/db";
 
@@ -25,6 +30,21 @@ export class CreateAppointment {
 
     if (input.date < now) {
       throw new CannotCreateAppointmentInThePastError();
+    }
+
+    const hasAppointmentInTheSameTime = await prisma.appointment.findFirst({
+      where: {
+        date: {
+          equals: input.date,
+        },
+        barberId: input.barberId,
+      },
+    });
+
+    if (hasAppointmentInTheSameTime) {
+      throw new CannotCreateAppointmentInTheSameTimeError(
+        formatInTimeZone(input.date, "America/Sao_Paulo", "HH:mm"),
+      );
     }
 
     const appointment = await prisma.appointment.create({
