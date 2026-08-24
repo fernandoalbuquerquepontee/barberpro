@@ -4,7 +4,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { auth } from "@/lib/auth";
-import { ErrorSchema } from "@/schemas";
+import { ErrorSchema, GetBarberServicesSchema } from "@/schemas";
 import { GetServicesData } from "@/usecases/GetServices";
 
 export const barberRoutes = (app: FastifyInstance) => {
@@ -15,13 +15,7 @@ export const barberRoutes = (app: FastifyInstance) => {
       tags: ["Barbers"],
       summary: "Get all services",
       response: {
-        200: z.array(
-          z.object({
-            id: z.uuid(),
-            name: z.string(),
-            price: z.number(),
-          }),
-        ),
+        200: z.array(GetBarberServicesSchema),
         401: ErrorSchema,
         404: ErrorSchema,
         500: ErrorSchema,

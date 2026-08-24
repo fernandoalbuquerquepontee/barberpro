@@ -7,9 +7,12 @@ import {
   CannotCreateAppointmentInThePastError,
   CannotCreateAppointmentInTheSameTimeError,
 } from "@/errors/appointment";
-import { Status } from "@/generated/prisma";
 import { auth } from "@/lib/auth";
-import { ErrorSchema } from "@/schemas";
+import {
+  AppointmentSchema,
+  CreateAppointmentBodySchema,
+  ErrorSchema,
+} from "@/schemas";
 import { CreateAppointment } from "@/usecases/CreateAppointment";
 import { GetAppointmentsHistory } from "@/usecases/GetAppointmentsHistory";
 import { GetAvailableBarbers } from "@/usecases/GetAvailableBarbers";
@@ -22,27 +25,9 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     schema: {
       tags: ["Appointments"],
       summary: "Create a new appointment",
-      body: z.object({
-        serviceId: z.uuid(),
-        userId: z.string(),
-        barberId: z.uuid(),
-        date: z.string().transform((val) => {
-          const hasTimezone = /(Z|[+-]\d{2}:\d{2})$/.test(val);
-          const dateStringWithTimezone = hasTimezone ? val : `${val}-03:00`;
-
-          return new Date(dateStringWithTimezone);
-        }),
-        status: z.enum(Status),
-      }),
+      body: CreateAppointmentBodySchema,
       response: {
-        201: z.object({
-          id: z.uuid(),
-          serviceId: z.uuid(),
-          userId: z.string(),
-          barberId: z.uuid(),
-          date: z.coerce.date(),
-          status: z.enum(Status),
-        }),
+        201: AppointmentSchema,
         400: ErrorSchema,
         401: ErrorSchema,
         404: ErrorSchema,
@@ -102,16 +87,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
         userId: z.string(),
       }),
       response: {
-        200: z.array(
-          z.object({
-            id: z.uuid(),
-            serviceId: z.uuid(),
-            userId: z.string(),
-            barberId: z.uuid(),
-            date: z.coerce.date(),
-            status: z.enum(Status),
-          }),
-        ),
+        200: z.array(AppointmentSchema),
         401: ErrorSchema,
         404: ErrorSchema,
         500: ErrorSchema,
