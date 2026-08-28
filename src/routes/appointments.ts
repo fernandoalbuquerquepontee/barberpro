@@ -21,7 +21,7 @@ import { GetAvailableHours } from "@/usecases/GetAvailableHours";
 export const appointmentRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "POST",
-    url: "/appointments",
+    url: "/",
     schema: {
       tags: ["Appointments"],
       summary: "Create a new appointment",
@@ -79,7 +79,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
-    url: "/appointments/:userId",
+    url: "/:userId",
     schema: {
       tags: ["Appointments"],
       summary: "Get all appointments for a user",
@@ -125,7 +125,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
-    url: "/appointments/hours",
+    url: "/hours",
     schema: {
       tags: ["Appointments"],
       summary: "Get available hours for appointments",
@@ -172,7 +172,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
-    url: "/appointments/available-barbers",
+    url: "/available-barbers",
     schema: {
       tags: ["Appointments"],
       sumary: "Get available barbers for a specific date and time",
