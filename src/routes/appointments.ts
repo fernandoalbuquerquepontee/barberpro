@@ -12,6 +12,7 @@ import {
   AppointmentSchema,
   CreateAppointmentBodySchema,
   ErrorSchema,
+  GetBarbersSchema,
 } from "@/schemas";
 import { CreateAppointment } from "@/usecases/CreateAppointment";
 import { GetAppointmentsHistory } from "@/usecases/GetAppointmentsHistory";
@@ -183,16 +184,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
         time: z.string().regex(/^\d{2}:\d{2}$/, "Formato deve ser HH:mm"),
       }),
       response: {
-        200: z.array(
-          z.object({
-            id: z.uuid(),
-            name: z.string(),
-            specialty: z.string(),
-            avatarUrl: z.string().nullable(),
-            createdAt: z.coerce.date(),
-            updatedAt: z.coerce.date(),
-          }),
-        ),
+        200: z.array(GetBarbersSchema),
         401: ErrorSchema,
         404: ErrorSchema,
         500: ErrorSchema,

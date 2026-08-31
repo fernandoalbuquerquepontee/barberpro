@@ -34,3 +34,10 @@ export const GetBarberServicesSchema = z.object({
   name: z.string(),
   price: z.number(),
 });
+
+export const GetBarbersSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  specialty: z.string(),
+  avatarUrl: z.string().nullable(),
+});

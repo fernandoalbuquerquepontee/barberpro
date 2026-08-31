@@ -1,10 +1,15 @@
-import { fromNodeHeaders } from "better-auth/node";
+// import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { auth } from "@/lib/auth";
-import { ErrorSchema, GetBarberServicesSchema } from "@/schemas";
+// import { auth } from "@/lib/auth";
+import {
+  ErrorSchema,
+  GetBarberServicesSchema,
+  GetBarbersSchema,
+} from "@/schemas";
+import { GetAllBarbersUseCase } from "@/usecases/GetAllBarbers";
 import { GetServicesData } from "@/usecases/GetServices";
 
 export const barberRoutes = (app: FastifyInstance) => {
@@ -23,18 +28,48 @@ export const barberRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+        // const session = await auth.api.getSession({
+        //   headers: fromNodeHeaders(request.headers),
+        // });
 
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
+        // if (!session) {
+        //   return reply.status(401).send({
+        //     error: "Unauthorized",
+        //     code: "UNAUTHORIZED",
+        //   });
+        // }
         const getServicesData = new GetServicesData();
         const result = await getServicesData.execute();
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/",
+    schema: {
+      tags: ["Barbers"],
+      summary: "Get all barbers",
+      response: {
+        200: z.array(GetBarbersSchema),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (_request, reply) => {
+      try {
+        const getAllBarbers = new GetAllBarbersUseCase();
+
+        const result = await getAllBarbers.execute();
 
         return reply.status(200).send(result);
       } catch (error) {
