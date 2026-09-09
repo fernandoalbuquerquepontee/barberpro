@@ -20,22 +20,25 @@ interface InputDto {
   serviceId: string;
   userId: string;
   barberId: string;
-  date: Date;
+  date: string;
+  hour: string;
   status: Status;
 }
 
 export class CreateAppointment {
   async execute(input: InputDto): Promise<OutputDto> {
+    const dateTimeString = `${input.date}T${input.hour}:00`;
+    const appointmentDate = new Date(dateTimeString);
     const now = new Date();
 
-    if (input.date < now) {
+    if (appointmentDate < now) {
       throw new CannotCreateAppointmentInThePastError();
     }
 
     const hasAppointmentInTheSameTime = await prisma.appointment.findFirst({
       where: {
         date: {
-          equals: input.date,
+          equals: appointmentDate,
         },
         barberId: input.barberId,
       },
@@ -52,7 +55,7 @@ export class CreateAppointment {
         serviceId: input.serviceId,
         userId: input.userId,
         barberId: input.barberId,
-        date: input.date,
+        date: appointmentDate,
         status: input.status,
       },
     });

@@ -12,7 +12,7 @@ export const AppointmentSchema = z.object({
   serviceId: z.uuid(),
   userId: z.string(),
   barberId: z.uuid(),
-  date: z.coerce.date(),
+  date: z.date(),
   status: z.enum(Status),
 });
 
@@ -20,12 +20,8 @@ export const CreateAppointmentBodySchema = z.object({
   serviceId: z.uuid(),
   userId: z.string(),
   barberId: z.uuid(),
-  date: z.string().transform((val) => {
-    const hasTimezone = /(Z|[+-]\d{2}:\d{2})$/.test(val);
-    const dateStringWithTimezone = hasTimezone ? val : `${val}-03:00`;
-
-    return new Date(dateStringWithTimezone);
-  }),
+  date: z.string(),
+  hour: z.string(),
   status: z.enum(Status),
 });
 
