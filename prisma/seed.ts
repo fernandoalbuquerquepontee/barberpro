@@ -3,7 +3,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-import { PrismaClient, Role, Status } from "../src/generated/prisma";
+import { PrismaClient, Status } from "../src/generated/prisma";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -24,7 +24,7 @@ async function main() {
       name: "Fernando Albuquerque",
       email: "fernando@exemplo.com",
       emailVerified: true,
-      role: Role.ADMIN,
+      role: "user",
     },
   });
 
@@ -33,7 +33,7 @@ async function main() {
       name: "Carlos Eduardo",
       email: "carlos@exemplo.com",
       emailVerified: true,
-      role: Role.USER,
+      role: "user",
     },
   });
 
