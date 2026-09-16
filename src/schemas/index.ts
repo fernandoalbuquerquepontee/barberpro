@@ -7,13 +7,28 @@ export const ErrorSchema = z.object({
   code: z.string(),
 });
 
-export const AppointmentSchema = z.object({
+export const CreateAppointmentSchema = z.object({
   id: z.uuid(),
   serviceId: z.uuid(),
   userId: z.string(),
   barberId: z.uuid(),
   date: z.date(),
   status: z.enum(Status),
+});
+
+export const GetUserAppointmentsSchema = z.object({
+  id: z.uuid(),
+  serviceId: z.uuid(),
+  userId: z.string(),
+  barberId: z.uuid(),
+  date: z.date(),
+  status: z.enum(Status),
+  service: z.object({
+    name: z.string(),
+  }),
+  barber: z.object({
+    name: z.string(),
+  }),
 });
 
 export const CreateAppointmentBodySchema = z.object({

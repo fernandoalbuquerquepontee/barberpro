@@ -8,6 +8,12 @@ interface OutputDto {
   barberId: string;
   date: Date;
   status: Status;
+  service: {
+    name: string;
+  };
+  barber: {
+    name: string;
+  };
 }
 
 interface InputDto {
@@ -27,6 +33,16 @@ export class GetAppointmentsHistory {
         barberId: true,
         date: true,
         status: true,
+        service: {
+          select: {
+            name: true,
+          },
+        },
+        barber: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
   }

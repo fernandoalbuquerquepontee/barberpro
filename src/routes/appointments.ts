@@ -9,10 +9,11 @@ import {
 } from "@/errors/appointment";
 import { auth } from "@/lib/auth";
 import {
-  AppointmentSchema,
   CreateAppointmentBodySchema,
+  CreateAppointmentSchema,
   ErrorSchema,
   GetBarbersSchema,
+  GetUserAppointmentsSchema,
 } from "@/schemas";
 import { CreateAppointment } from "@/usecases/CreateAppointment";
 import { GetAppointmentsHistory } from "@/usecases/GetAppointmentsHistory";
@@ -28,7 +29,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
       summary: "Create a new appointment",
       body: CreateAppointmentBodySchema,
       response: {
-        201: AppointmentSchema,
+        201: CreateAppointmentSchema,
         400: ErrorSchema,
         401: ErrorSchema,
         404: ErrorSchema,
@@ -88,7 +89,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
         userId: z.string(),
       }),
       response: {
-        200: z.array(AppointmentSchema),
+        200: z.array(GetUserAppointmentsSchema),
         401: ErrorSchema,
         404: ErrorSchema,
         500: ErrorSchema,
