@@ -112,10 +112,9 @@ app.route({
       const response = await auth.handler(req);
       reply.status(response.status);
 
-      // <-- CORREÇÃO DOS COOKIES APLICADA AQUI -->
       const setCookies = response.headers.getSetCookie();
       if (setCookies && setCookies.length > 0) {
-        reply.header("set-cookie", setCookies);
+        reply.raw.setHeader("set-cookie", setCookies);
       }
 
       response.headers.forEach((value, key) => {
