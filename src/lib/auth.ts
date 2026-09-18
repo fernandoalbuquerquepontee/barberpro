@@ -38,7 +38,4 @@ export const auth = betterAuth({
       secure: true,
     },
   },
-  account: {
-    skipStateCookieCheck: true,
-  },
 });
