@@ -27,6 +27,7 @@ await app.register(fastifyCors, {
     "http://localhost:5174",
     "http://127.0.0.1:8080",
     "https://barberpro-ap33.onrender.com",
+    "https://barber-pro-umber.vercel.app",
   ],
   credentials: true,
 });
