@@ -17,6 +17,7 @@ import { barberRoutes } from "./routes/barbers";
 
 const app = Fastify({
   logger: true,
+  trustProxy: true,
 });
 
 await app.register(fastifyCors, {
@@ -25,6 +26,7 @@ await app.register(fastifyCors, {
     "http://localhost:8080",
     "http://localhost:5174",
     "http://127.0.0.1:8080",
+    "https://barberpro.onrender.com",
   ],
   credentials: true,
 });
@@ -41,6 +43,11 @@ await app.register(fastifySwagger, {
       version: "1.0.0",
     },
     servers: [
+      // <-- ADICIONADO: Configura o Swagger para enviar os pedidos para o Render
+      {
+        description: "Production",
+        url: "https://barberpro.onrender.com",
+      },
       {
         description: "Localhost",
         url: "http://localhost:8080",
@@ -87,7 +94,9 @@ app.route({
   url: "/api/auth/*",
   async handler(request, reply) {
     try {
-      const url = new URL(request.url, `http://${request.headers.host}`);
+      const protocol =
+        (request.headers["x-forwarded-proto"] as string) || "http";
+      const url = new URL(request.url, `${protocol}://${request.headers.host}`);
 
       const headers = new Headers();
       Object.entries(request.headers).forEach(([key, value]) => {
@@ -104,7 +113,6 @@ app.route({
       response.headers.forEach((value, key) => reply.header(key, value));
       reply.send(response.body ? await response.text() : null);
     } catch (error) {
-      app.log.error(error);
       app.log.error(error);
       reply.status(500).send({
         error: "Internal authentication error",
