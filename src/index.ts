@@ -26,7 +26,7 @@ await app.register(fastifyCors, {
     "http://localhost:8080",
     "http://localhost:5174",
     "http://127.0.0.1:8080",
-    "https://barberpro.onrender.com",
+    "https://barberpro-ap33.onrender.com",
   ],
   credentials: true,
 });
@@ -46,7 +46,7 @@ await app.register(fastifySwagger, {
       // <-- ADICIONADO: Configura o Swagger para enviar os pedidos para o Render
       {
         description: "Production",
-        url: "https://barberpro.onrender.com",
+        url: "https://barberpro-ap33.onrender.com",
       },
       {
         description: "Localhost",
