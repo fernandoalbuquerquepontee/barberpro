@@ -32,4 +32,10 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   plugins: [openAPI(), admin()],
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
+  },
 });
