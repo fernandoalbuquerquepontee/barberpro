@@ -27,7 +27,7 @@ interface InputDto {
 
 export class CreateAppointment {
   async execute(input: InputDto): Promise<OutputDto> {
-    const dateTimeString = `${input.date}T${input.hour}:00`;
+    const dateTimeString = `${input.date}T${input.hour}:00-03:00`;
     const appointmentDate = new Date(dateTimeString);
     const now = new Date();
 
