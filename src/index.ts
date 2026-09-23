@@ -30,6 +30,7 @@ await app.register(fastifyCors, {
     "https://barber-pro-umber.vercel.app",
   ],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 });
 
 app.setValidatorCompiler(validatorCompiler);
