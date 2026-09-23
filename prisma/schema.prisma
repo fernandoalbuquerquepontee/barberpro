@@ -21,7 +21,7 @@ model User {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   email         String
-  banned        Boolean?  @default(false)
+  banned        Boolean?      @default(false)
   banReason     String?
   banExpires    DateTime?
   emailVerified Boolean       @default(false)
@@ -101,13 +101,15 @@ model Service {
 }
 
 model Appointment {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
   userId    String
   barberId  String
   serviceId String
-  user      User     @relation(fields: [userId], references: [id])
-  barber    Barber   @relation(fields: [barberId], references: [id])
-  service   Service  @relation(fields: [serviceId], references: [id])
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barber  Barber  @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
   date      DateTime
   status    Status   @default(PENDING)
   createdAt DateTime @default(now())
