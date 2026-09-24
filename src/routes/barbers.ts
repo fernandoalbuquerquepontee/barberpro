@@ -11,6 +11,7 @@ import {
 } from "@/schemas";
 import { CreateBarberUseCase } from "@/usecases/CreateBarber";
 import { DeleteBarber } from "@/usecases/DeleteBarber";
+import { EditBarberUseCase } from "@/usecases/EditBarber";
 import { GetAllBarbersUseCase } from "@/usecases/GetAllBarbers";
 import { GetServicesData } from "@/usecases/GetServices";
 
@@ -169,6 +170,76 @@ export const barberRoutes = (app: FastifyInstance) => {
         return reply.status(200).send(result);
       } catch (error) {
         app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:userId",
+    schema: {
+      tags: ["Barbers"],
+      summary: "Edit barber",
+      params: z.object({
+        userId: z.string(),
+      }),
+      body: z.object({
+        name: z.string().optional(),
+        specialty: z.string().optional(),
+        avatarUrl: z.url().optional(),
+      }),
+      response: {
+        200: GetBarbersSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const { userId } = request.params;
+        const { name, specialty, avatarUrl } = request.body;
+
+        const editBarber = new EditBarberUseCase();
+
+        const result = await editBarber.execute({
+          userId,
+          role: session.user.role,
+          name,
+          specialty,
+          avatarUrl: avatarUrl === "" ? null : avatarUrl,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+
+        if (
+          error instanceof Error &&
+          error.message.includes("administradores")
+        ) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
         return reply.status(500).send({
           error: "Internal Server Error",
           code: "INTERNAL_SERVER_ERROR",
