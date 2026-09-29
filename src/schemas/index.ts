@@ -52,3 +52,9 @@ export const GetBarbersSchema = z.object({
   specialty: z.string(),
   avatarUrl: z.string().nullable(),
 });
+
+export const DashboardMetricsSchema = z.object({
+  revenueToday: z.number(),
+  totalReservations: z.number(),
+  attendedClients: z.number(),
+});

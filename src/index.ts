@@ -14,6 +14,7 @@ import {
 import { auth } from "./lib/auth";
 import { appointmentRoutes } from "./routes/appointments";
 import { barberRoutes } from "./routes/barbers";
+import { dashboardRoutes } from "./routes/dashboard";
 
 const app = Fastify({
   logger: true,
@@ -90,6 +91,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
 
 await app.register(barberRoutes, { prefix: "/barbers" });
 await app.register(appointmentRoutes, { prefix: "/appointments" });
+await app.register(dashboardRoutes, { prefix: "/dashboard" });
 
 app.route({
   method: ["GET", "POST"],
