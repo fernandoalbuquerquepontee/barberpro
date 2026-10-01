@@ -51,9 +51,11 @@ export class GetRevenueMonthlyUseCase {
       }
     }
 
-    return Object.entries(monthlyRevenue).map(([month, revenue]) => ({
-      month,
-      revenue,
-    }));
+    return Object.entries(monthlyRevenue)
+      .map(([month, revenue]) => ({
+        month,
+        revenue,
+      }))
+      .filter((item) => item.revenue > 0);
   }
 }
