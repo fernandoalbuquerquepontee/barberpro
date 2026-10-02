@@ -8,6 +8,7 @@ import { DashboardMetricsSchema, ErrorSchema } from "@/schemas";
 import { GetMetricsUseCase } from "@/usecases/GetMetrics";
 import { GetRevenueAnnualUseCase } from "@/usecases/GetRevenueAnnual";
 import { GetRevenueMonthlyUseCase } from "@/usecases/GetRevenueMonthly";
+import { GetRevenuePerDayUseCase } from "@/usecases/GetRevenuePerDay";
 import { GetTeamPerformanceUseCase } from "@/usecases/GetTeamPerformance";
 
 export const dashboardRoutes = (app: FastifyInstance) => {
@@ -196,6 +197,61 @@ export const dashboardRoutes = (app: FastifyInstance) => {
 
         const result = await getTeamPerformance.execute({
           role: session.user.role,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/revenue/perDay",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Get revenue per day",
+      querystring: z.object({
+        range: z.enum(["7d", "30d", "90d"]).default("30d"),
+      }),
+      response: {
+        200: z.array(
+          z.object({
+            date: z.string(),
+            revenue: z.number(),
+          }),
+        ),
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const { range } = request.query;
+
+        const getRevenuePerDay = new GetRevenuePerDayUseCase();
+
+        const result = await getRevenuePerDay.execute({
+          role: session.user.role,
+          range,
         });
 
         return reply.status(200).send(result);
