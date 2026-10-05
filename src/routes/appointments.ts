@@ -15,6 +15,7 @@ import {
   GetBarbersSchema,
   GetUserAppointmentsSchema,
 } from "@/schemas";
+import { CancelAppointmentUseCase } from "@/usecases/CancelAppointment";
 import { CreateAppointment } from "@/usecases/CreateAppointment";
 import { GetAppointmentsHistory } from "@/usecases/GetAppointmentsHistory";
 import { GetAvailableBarbers } from "@/usecases/GetAvailableBarbers";
@@ -211,6 +212,61 @@ export const appointmentRoutes = (app: FastifyInstance) => {
         const result = await getAvailableBarbers.execute({ date, time });
 
         return reply.status(200).send(result.barbers);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:appointmentId/cancel",
+    schema: {
+      tags: ["Appointments"],
+      summary: "Cancel an appointment by changing its status to CANCELLED",
+      params: z.object({
+        appointmentId: z.string(),
+      }),
+      response: {
+        200: z.object({
+          message: z.string(),
+        }),
+        400: ErrorSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const { appointmentId } = request.params;
+
+        const cancelAppointment = new CancelAppointmentUseCase();
+
+        await cancelAppointment.execute({
+          appointmentId,
+          userId: session.user.id,
+        });
+
+        return reply.status(200).send({
+          message: "Appointment cancelled successfully",
+        });
       } catch (error) {
         app.log.error(error);
         return reply.status(500).send({
