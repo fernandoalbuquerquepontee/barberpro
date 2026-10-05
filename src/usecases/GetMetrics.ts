@@ -28,6 +28,9 @@ export class GetMetricsUseCase {
           gte: startOfDay,
           lte: endOfDay,
         },
+        status: {
+          not: "CANCELLED",
+        },
       },
       include: {
         service: true,

@@ -16,6 +16,11 @@ export class GetRevenueAnnualUseCase {
     }
 
     const appointments = await prisma.appointment.findMany({
+      where: {
+        NOT: {
+          status: "CANCELLED",
+        },
+      },
       select: {
         date: true,
         service: {

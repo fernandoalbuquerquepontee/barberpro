@@ -28,6 +28,9 @@ export class GetRevenuePerDayUseCase {
         date: {
           gte: startDate,
         },
+        NOT: {
+          status: "CANCELLED",
+        },
       },
       include: {
         service: true,
