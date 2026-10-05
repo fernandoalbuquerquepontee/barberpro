@@ -1,3 +1,5 @@
+import { format, subDays } from "date-fns";
+
 import { prisma } from "@/lib/db";
 
 export interface OutputDto {
@@ -19,8 +21,7 @@ export class GetRevenuePerDayUseCase {
     const rangeDays =
       input.range === "7d" ? 7 : input.range === "90d" ? 90 : 30;
 
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - rangeDays);
+    const startDate = subDays(new Date(), rangeDays - 1);
     startDate.setHours(0, 0, 0, 0);
 
     const appointments = await prisma.appointment.findMany({
@@ -42,15 +43,14 @@ export class GetRevenuePerDayUseCase {
 
     const revenueMap: Record<string, number> = {};
 
-    for (let i = 0; i <= rangeDays; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - (rangeDays - i));
-      const dateString = d.toISOString().split("T")[0];
+    for (let i = 0; i < rangeDays; i++) {
+      const d = subDays(new Date(), rangeDays - 1 - i);
+      const dateString = format(d, "yyyy-MM-dd");
       revenueMap[dateString] = 0;
     }
 
     for (const appointment of appointments) {
-      const dateString = appointment.date.toISOString().split("T")[0];
+      const dateString = format(appointment.date, "yyyy-MM-dd");
       const price = appointment.service?.price
         ? Number(appointment.service.price)
         : 0;
