@@ -43,6 +43,14 @@ export const auth = betterAuth({
           `\n[BETTER AUTH] -> Enviar WhatsApp para ${phoneNumber} com o código: ${code}\n`,
         );
       },
+      signUpOnVerification: {
+        getTempEmail: (phoneNumber) => {
+          return `${phoneNumber.replace("+", "")}@barberpro.com`;
+        },
+        getTempName: () => {
+          return "Cliente";
+        },
+      },
     }),
   ],
   advanced: {
