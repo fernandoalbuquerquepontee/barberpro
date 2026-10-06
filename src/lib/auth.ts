@@ -1,7 +1,7 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { admin, openAPI } from "better-auth/plugins";
+import { admin, openAPI, phoneNumber } from "better-auth/plugins"; // 1. Importe o phoneNumber
 
 import { PrismaClient } from "@/generated/prisma";
 
@@ -31,7 +31,17 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  plugins: [openAPI(), admin()],
+  plugins: [
+    openAPI(),
+    admin(),
+    phoneNumber({
+      sendOTP: async ({ phoneNumber, code }) => {
+        console.log(
+          `\n[BETTER AUTH] -> Enviar WhatsApp para ${phoneNumber} com o código: ${code}\n`,
+        );
+      },
+    }),
+  ],
   advanced: {
     defaultCookieAttributes: {
       sameSite: "none",

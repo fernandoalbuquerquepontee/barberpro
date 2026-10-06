@@ -15,17 +15,20 @@ enum Status {
 
 model User {
   id            String        @id @default(uuid())
-  name          String?
+  name          String
   appointments  Appointment[]
   role          String?       @default("user")
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-  email         String
+  email         String?
   banned        Boolean?      @default(false)
   banReason     String?
   banExpires    DateTime?
   emailVerified Boolean       @default(false)
   image         String?
+
+  phoneNumber         String?   @unique
+  phoneNumberVerified Boolean   @default(false)
   sessions      Session[]
   accounts      Account[]
 
