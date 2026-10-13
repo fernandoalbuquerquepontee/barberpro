@@ -31,9 +31,6 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  logger: {
-    level: "error",
-  },
   plugins: [
     openAPI(),
     admin(),
@@ -46,9 +43,6 @@ export const auth = betterAuth({
       signUpOnVerification: {
         getTempEmail: (phoneNumber) => {
           return `${phoneNumber.replace("+", "")}@barberpro.com`;
-        },
-        getTempName: () => {
-          return "Cliente";
         },
       },
     }),

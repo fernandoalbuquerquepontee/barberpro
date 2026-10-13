@@ -4,12 +4,17 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { auth } from "@/lib/auth";
-import { DashboardMetricsSchema, ErrorSchema } from "@/schemas";
+import {
+  DashboardMetricsSchema,
+  ErrorSchema,
+  UpdateScheduleBodySchema,
+} from "@/schemas";
 import { GetMetricsUseCase } from "@/usecases/GetMetrics";
 import { GetRevenueAnnualUseCase } from "@/usecases/GetRevenueAnnual";
 import { GetRevenueMonthlyUseCase } from "@/usecases/GetRevenueMonthly";
 import { GetRevenuePerDayUseCase } from "@/usecases/GetRevenuePerDay";
 import { GetTeamPerformanceUseCase } from "@/usecases/GetTeamPerformance";
+import { UpdateScheduleUseCase } from "@/usecases/UpdateSchedule";
 
 export const dashboardRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -255,6 +260,51 @@ export const dashboardRoutes = (app: FastifyInstance) => {
         });
 
         return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PUT",
+    url: "/schedule",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Update shop schedule",
+      body: UpdateScheduleBodySchema,
+      response: {
+        200: z.object({ message: z.string() }),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const updateSchedule = new UpdateScheduleUseCase();
+
+        await updateSchedule.execute({
+          schedules: request.body.schedules,
+        });
+
+        return reply
+          .status(200)
+          .send({ message: "Escala atualizada com sucesso" });
       } catch (error) {
         app.log.error(error);
         return reply.status(500).send({

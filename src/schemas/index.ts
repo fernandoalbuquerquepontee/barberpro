@@ -58,3 +58,14 @@ export const DashboardMetricsSchema = z.object({
   totalReservations: z.number(),
   attendedClients: z.number(),
 });
+
+export const ScheduleDaySchema = z.object({
+  dayOfWeek: z.number().int().min(0).max(6),
+  startTime: z.string().nullable(),
+  endTime: z.string().nullable(),
+  isClosed: z.boolean(),
+});
+
+export const UpdateScheduleBodySchema = z.object({
+  schedules: z.array(ScheduleDaySchema),
+});

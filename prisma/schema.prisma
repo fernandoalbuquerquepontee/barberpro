@@ -118,3 +118,16 @@ model Appointment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model ShopSchedule {
+  id        String  @id @default(uuid())
+  dayOfWeek Int     @unique
+  startTime String?
+  endTime   String?
+  isClosed  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("shop_schedule")
+}
