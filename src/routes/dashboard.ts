@@ -13,6 +13,7 @@ import { GetMetricsUseCase } from "@/usecases/GetMetrics";
 import { GetRevenueAnnualUseCase } from "@/usecases/GetRevenueAnnual";
 import { GetRevenueMonthlyUseCase } from "@/usecases/GetRevenueMonthly";
 import { GetRevenuePerDayUseCase } from "@/usecases/GetRevenuePerDay";
+import { GetScheduleUseCase } from "@/usecases/GetSchedule";
 import { GetTeamPerformanceUseCase } from "@/usecases/GetTeamPerformance";
 import { UpdateScheduleUseCase } from "@/usecases/UpdateSchedule";
 
@@ -305,6 +306,52 @@ export const dashboardRoutes = (app: FastifyInstance) => {
         return reply
           .status(200)
           .send({ message: "Escala atualizada com sucesso" });
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/schedule",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Get shop schedule",
+      response: {
+        200: z.array(
+          z.object({
+            dayOfWeek: z.number(),
+            startTime: z.string().nullable(),
+            endTime: z.string().nullable(),
+            isClosed: z.boolean(),
+          }),
+        ),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const getSchedule = new GetScheduleUseCase();
+        const result = await getSchedule.execute();
+
+        return reply.status(200).send(result);
       } catch (error) {
         app.log.error(error);
         return reply.status(500).send({
