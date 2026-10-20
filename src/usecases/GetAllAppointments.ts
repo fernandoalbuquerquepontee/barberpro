@@ -14,6 +14,11 @@ interface OutputDto {
   barber: {
     name: string;
   };
+  user: {
+    name: string;
+    phoneNumber: string | null;
+    image: string | null;
+  };
 }
 
 interface InputDto {

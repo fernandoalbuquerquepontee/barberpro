@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import {
   DashboardMetricsSchema,
   ErrorSchema,
+  GetAllAppointmentsSchema,
   GetUserAppointmentsSchema,
   UpdateAppointmentBodySchema,
   UpdateScheduleBodySchema,
@@ -378,7 +379,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
       tags: ["Dashboard"],
       summary: "Get all appointments (dashboard)",
       response: {
-        200: z.array(GetUserAppointmentsSchema),
+        200: z.array(GetAllAppointmentsSchema),
         401: ErrorSchema,
         500: ErrorSchema,
       },

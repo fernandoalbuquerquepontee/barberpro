@@ -31,6 +31,26 @@ export const GetUserAppointmentsSchema = z.object({
   }),
 });
 
+export const GetAllAppointmentsSchema = z.object({
+  id: z.uuid(),
+  serviceId: z.uuid(),
+  userId: z.string(),
+  barberId: z.uuid(),
+  date: z.date(),
+  status: z.enum(Status),
+  service: z.object({
+    name: z.string(),
+  }),
+  barber: z.object({
+    name: z.string(),
+  }),
+  user: z.object({
+    name: z.string(),
+    phoneNumber: z.string().nullable(),
+    image: z.string().nullable().optional(),
+  }),
+});
+
 export const CreateAppointmentBodySchema = z.object({
   serviceId: z.uuid(),
   userId: z.string(),
