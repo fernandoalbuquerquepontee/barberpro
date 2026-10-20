@@ -7,8 +7,10 @@ import { auth } from "@/lib/auth";
 import {
   DashboardMetricsSchema,
   ErrorSchema,
+  GetUserAppointmentsSchema,
   UpdateScheduleBodySchema,
 } from "@/schemas";
+import { GetAllAppointmentsUseCase } from "@/usecases/GetAllAppointments";
 import { GetMetricsUseCase } from "@/usecases/GetMetrics";
 import { GetRevenueAnnualUseCase } from "@/usecases/GetRevenueAnnual";
 import { GetRevenueMonthlyUseCase } from "@/usecases/GetRevenueMonthly";
@@ -350,6 +352,48 @@ export const dashboardRoutes = (app: FastifyInstance) => {
 
         const getSchedule = new GetScheduleUseCase();
         const result = await getSchedule.execute();
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/appointments",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Get all appointments (dashboard)",
+      response: {
+        200: z.array(GetUserAppointmentsSchema),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const getAllAppointments = new GetAllAppointmentsUseCase();
+
+        const result = await getAllAppointments.execute({
+          role: session.user.role,
+        });
 
         return reply.status(200).send(result);
       } catch (error) {
