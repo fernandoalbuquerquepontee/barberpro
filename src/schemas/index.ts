@@ -40,6 +40,20 @@ export const CreateAppointmentBodySchema = z.object({
   status: z.enum(Status),
 });
 
+export const UpdateAppointmentBodySchema = z.object({
+  serviceId: z.uuid().optional(),
+  barberId: z.uuid().optional(),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato deve ser YYYY-MM-DD")
+    .optional(),
+  hour: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/, "Formato deve ser HH:mm")
+    .optional(),
+  status: z.enum(Status).optional(),
+});
+
 export const GetBarberServicesSchema = z.object({
   id: z.uuid(),
   name: z.string(),
