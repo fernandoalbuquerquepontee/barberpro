@@ -38,6 +38,13 @@ export class GetAllAppointmentsUseCase {
             name: true,
           },
         },
+        user: {
+          select: {
+            name: true,
+            phoneNumber: true,
+            image: true,
+          },
+        },
       },
     });
   }
