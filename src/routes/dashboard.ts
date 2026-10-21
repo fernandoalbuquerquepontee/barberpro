@@ -9,6 +9,7 @@ import {
 } from "@/errors/appointment";
 import { auth } from "@/lib/auth";
 import {
+  CreateServiceBodySchema,
   DashboardMetricsSchema,
   ErrorSchema,
   GetAllAppointmentsSchema,
@@ -17,6 +18,7 @@ import {
   UpdateAppointmentBodySchema,
   UpdateScheduleBodySchema,
 } from "@/schemas";
+import { CreateServiceUseCase } from "@/usecases/CreateService";
 import { DeleteAppointmentUseCase } from "@/usecases/DeleteAppointment";
 import { GetAllAppointmentsUseCase } from "@/usecases/GetAllAppointments";
 import { GetAllServicesUseCase } from "@/usecases/GetAllServices";
@@ -449,6 +451,64 @@ export const dashboardRoutes = (app: FastifyInstance) => {
         });
 
         return reply.status(200).send(result);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message.includes("administradores")
+        ) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/services",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Create a service (dashboard)",
+      body: CreateServiceBodySchema,
+      response: {
+        201: GetBarberServicesSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const { name, price } = request.body;
+
+        const createService = new CreateServiceUseCase();
+
+        const result = await createService.execute({
+          name,
+          price,
+          role: session.user.role,
+        });
+
+        return reply.status(201).send(result);
       } catch (error) {
         if (
           error instanceof Error &&

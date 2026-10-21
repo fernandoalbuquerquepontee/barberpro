@@ -80,6 +80,11 @@ export const GetBarberServicesSchema = z.object({
   price: z.number(),
 });
 
+export const CreateServiceBodySchema = z.object({
+  name: z.string(),
+  price: z.number(),
+});
+
 export const GetBarbersSchema = z.object({
   id: z.uuid(),
   name: z.string(),
