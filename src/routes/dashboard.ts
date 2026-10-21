@@ -21,6 +21,7 @@ import {
 } from "@/schemas";
 import { CreateServiceUseCase } from "@/usecases/CreateService";
 import { DeleteAppointmentUseCase } from "@/usecases/DeleteAppointment";
+import { DeleteServiceUseCase } from "@/usecases/DeleteService";
 import { GetAllAppointmentsUseCase } from "@/usecases/GetAllAppointments";
 import { GetAllServicesUseCase } from "@/usecases/GetAllServices";
 import { GetMetricsUseCase } from "@/usecases/GetMetrics";
@@ -572,6 +573,76 @@ export const dashboardRoutes = (app: FastifyInstance) => {
           role: session.user.role,
           name,
           price,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message.includes("administradores")
+        ) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
+        if (
+          error instanceof Error &&
+          error.message.includes("não encontrado")
+        ) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND",
+          });
+        }
+
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "DELETE",
+    url: "/services/:serviceId",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Delete a service (dashboard)",
+      params: z.object({
+        serviceId: z.uuid(),
+      }),
+      response: {
+        200: z.object({ message: z.string() }),
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const { serviceId } = request.params;
+
+        const deleteService = new DeleteServiceUseCase();
+
+        const result = await deleteService.execute({
+          serviceId,
+          role: session.user.role,
         });
 
         return reply.status(200).send(result);
