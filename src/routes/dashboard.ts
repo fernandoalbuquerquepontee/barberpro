@@ -17,6 +17,7 @@ import {
   GetUserAppointmentsSchema,
   UpdateAppointmentBodySchema,
   UpdateScheduleBodySchema,
+  UpdateServiceBodySchema,
 } from "@/schemas";
 import { CreateServiceUseCase } from "@/usecases/CreateService";
 import { DeleteAppointmentUseCase } from "@/usecases/DeleteAppointment";
@@ -30,6 +31,7 @@ import { GetScheduleUseCase } from "@/usecases/GetSchedule";
 import { GetTeamPerformanceUseCase } from "@/usecases/GetTeamPerformance";
 import { UpdateAppointmentUseCase } from "@/usecases/UpdateAppointment";
 import { UpdateScheduleUseCase } from "@/usecases/UpdateSchedule";
+import { UpdateServiceUseCase } from "@/usecases/UpdateService";
 
 export const dashboardRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -517,6 +519,80 @@ export const dashboardRoutes = (app: FastifyInstance) => {
           return reply.status(403).send({
             error: error.message,
             code: "FORBIDDEN",
+          });
+        }
+
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/services/:serviceId",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Update a service (dashboard)",
+      params: z.object({
+        serviceId: z.uuid(),
+      }),
+      body: UpdateServiceBodySchema,
+      response: {
+        200: GetBarberServicesSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const { serviceId } = request.params;
+        const { name, price } = request.body;
+
+        const updateService = new UpdateServiceUseCase();
+
+        const result = await updateService.execute({
+          serviceId,
+          role: session.user.role,
+          name,
+          price,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message.includes("administradores")
+        ) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
+        if (
+          error instanceof Error &&
+          error.message.includes("não encontrado")
+        ) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND",
           });
         }
 
