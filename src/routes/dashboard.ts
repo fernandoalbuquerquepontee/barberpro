@@ -12,12 +12,14 @@ import {
   DashboardMetricsSchema,
   ErrorSchema,
   GetAllAppointmentsSchema,
+  GetBarberServicesSchema,
   GetUserAppointmentsSchema,
   UpdateAppointmentBodySchema,
   UpdateScheduleBodySchema,
 } from "@/schemas";
 import { DeleteAppointmentUseCase } from "@/usecases/DeleteAppointment";
 import { GetAllAppointmentsUseCase } from "@/usecases/GetAllAppointments";
+import { GetAllServicesUseCase } from "@/usecases/GetAllServices";
 import { GetMetricsUseCase } from "@/usecases/GetMetrics";
 import { GetRevenueAnnualUseCase } from "@/usecases/GetRevenueAnnual";
 import { GetRevenueMonthlyUseCase } from "@/usecases/GetRevenueMonthly";
@@ -405,6 +407,59 @@ export const dashboardRoutes = (app: FastifyInstance) => {
 
         return reply.status(200).send(result);
       } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/services",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Get all services (dashboard)",
+      response: {
+        200: z.array(GetBarberServicesSchema),
+        401: ErrorSchema,
+        403: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const getAllServices = new GetAllServicesUseCase();
+
+        const result = await getAllServices.execute({
+          role: session.user.role,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message.includes("administradores")
+        ) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
         app.log.error(error);
         return reply.status(500).send({
           error: "Internal Server Error",
