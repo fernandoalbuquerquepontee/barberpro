@@ -1,4 +1,3 @@
-// src/middlewares/verify-auth.ts
 import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyReply, FastifyRequest } from "fastify";
 

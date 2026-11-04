@@ -15,6 +15,7 @@ import {
   ErrorSchema,
   GetAllAppointmentsSchema,
   GetBarberServicesSchema,
+  GetBarbersSchema,
   GetRevenueAnnualResponseSchema,
   GetRevenueMonthlyResponseSchema,
   GetRevenuePerDayResponseSchema,
@@ -25,9 +26,12 @@ import {
   UpdateScheduleBodySchema,
   UpdateServiceBodySchema,
 } from "@/schemas";
+import { CreateBarberUseCase } from "@/usecases/CreateBarber";
 import { CreateServiceUseCase } from "@/usecases/CreateService";
 import { DeleteAppointmentUseCase } from "@/usecases/DeleteAppointment";
+import { DeleteBarber } from "@/usecases/DeleteBarber";
 import { DeleteServiceUseCase } from "@/usecases/DeleteService";
+import { EditBarberUseCase } from "@/usecases/EditBarber";
 import { GetAllAppointmentsUseCase } from "@/usecases/GetAllAppointments";
 import { GetAllServicesUseCase } from "@/usecases/GetAllServices";
 import { GetMetricsUseCase } from "@/usecases/GetMetrics";
@@ -613,6 +617,146 @@ export const dashboardRoutes = (app: FastifyInstance) => {
         }
 
         app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "DELETE",
+    url: "/:userId",
+    schema: {
+      tags: ["Barbers"],
+      summary: "Delete barber",
+      params: z.object({
+        userId: z.string(),
+      }),
+      response: {
+        200: GetBarbersSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { userId } = request.params as { userId: string };
+
+        const deleteBarber = new DeleteBarber();
+
+        const result = await deleteBarber.execute({
+          userId: userId,
+          role: request.user.role,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/",
+    schema: {
+      tags: ["Barbers"],
+      summary: "Create barber",
+      body: z.object({
+        name: z.string(),
+        specialty: z.string(),
+        avatarUrl: z.url(),
+      }),
+      response: {
+        200: GetBarbersSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { name, specialty, avatarUrl } = request.body;
+
+        const createBarber = new CreateBarberUseCase();
+
+        const result = await createBarber.execute({
+          name,
+          specialty,
+          avatarUrl,
+          role: request.user.role,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:userId",
+    schema: {
+      tags: ["Dashboard"],
+      summary: "Edit barber",
+      params: z.object({
+        userId: z.string(),
+      }),
+      body: z.object({
+        name: z.string().optional(),
+        specialty: z.string().optional(),
+        avatarUrl: z.url().optional(),
+      }),
+      response: {
+        200: GetBarbersSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { userId } = request.params;
+        const { name, specialty, avatarUrl } = request.body;
+
+        const editBarber = new EditBarberUseCase();
+
+        const result = await editBarber.execute({
+          userId,
+          role: request.user.role,
+          name,
+          specialty,
+          avatarUrl: avatarUrl === "" ? null : avatarUrl,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+
+        if (
+          error instanceof Error &&
+          error.message.includes("administradores")
+        ) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
         return reply.status(500).send({
           error: "Internal Server Error",
           code: "INTERNAL_SERVER_ERROR",
