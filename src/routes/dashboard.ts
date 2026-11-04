@@ -231,11 +231,11 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        //TODO: VERIFICAR O CARGO DO USUÁRIO
         const updateSchedule = new UpdateScheduleUseCase();
 
         await updateSchedule.execute({
           schedules: request.body.schedules,
+          role: request.user.role,
         });
 
         return reply
@@ -277,7 +277,9 @@ export const dashboardRoutes = (app: FastifyInstance) => {
         }
 
         const getSchedule = new GetScheduleUseCase();
-        const result = await getSchedule.execute();
+        const result = await getSchedule.execute({
+          role: request.user.role,
+        });
 
         return reply.status(200).send(result);
       } catch (error) {
