@@ -113,3 +113,36 @@ export const ScheduleDaySchema = z.object({
 export const UpdateScheduleBodySchema = z.object({
   schedules: z.array(ScheduleDaySchema),
 });
+
+export const GetRevenueMonthlyResponseSchema = z.array(
+  z.object({
+    month: z.string(),
+    revenue: z.number(),
+  }),
+);
+
+export const GetRevenueAnnualResponseSchema = z.array(
+  z.object({
+    year: z.string(),
+    revenue: z.number(),
+  }),
+);
+
+export const TeamPerformanceResponseSchema = z.array(
+  z.object({
+    id: z.string(),
+    name: z.string(),
+    avatarUrl: z.string().nullable(),
+    totalAppointments: z.number(),
+    revenue: z.number(),
+  }),
+);
+
+export const GetRevenuePerDayResponseSchema = z.array(
+  z.object({
+    date: z.string(),
+    revenue: z.number(),
+  }),
+);
+
+export const GetScheduleResponseSchema = z.array(ScheduleDaySchema);

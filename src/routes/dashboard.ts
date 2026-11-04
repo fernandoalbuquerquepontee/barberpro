@@ -14,7 +14,12 @@ import {
   ErrorSchema,
   GetAllAppointmentsSchema,
   GetBarberServicesSchema,
+  GetRevenueAnnualResponseSchema,
+  GetRevenueMonthlyResponseSchema,
+  GetRevenuePerDayResponseSchema,
   GetUserAppointmentsSchema,
+  ScheduleDaySchema,
+  TeamPerformanceResponseSchema,
   UpdateAppointmentBodySchema,
   UpdateScheduleBodySchema,
   UpdateServiceBodySchema,
@@ -86,12 +91,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
       tags: ["Dashboard"],
       summary: "Get revenue monthly",
       response: {
-        200: z.array(
-          z.object({
-            month: z.string(),
-            revenue: z.number(),
-          }),
-        ),
+        200: GetRevenueMonthlyResponseSchema,
         401: ErrorSchema,
         403: ErrorSchema,
         404: ErrorSchema,
@@ -135,12 +135,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
       tags: ["Dashboard"],
       summary: "Get revenue annual",
       response: {
-        200: z.array(
-          z.object({
-            year: z.string(),
-            revenue: z.number(),
-          }),
-        ),
+        200: GetRevenueAnnualResponseSchema,
         401: ErrorSchema,
         403: ErrorSchema,
         404: ErrorSchema,
@@ -184,23 +179,11 @@ export const dashboardRoutes = (app: FastifyInstance) => {
       tags: ["Dashboard"],
       summary: "Get team performance",
       response: {
-        200: z.array(
-          z.object({
-            id: z.string(),
-            name: z.string(),
-            avatarUrl: z.string().nullable(),
-            totalAppointments: z.number(),
-            revenue: z.number(),
-          }),
-        ),
-        401: z.object({
-          error: z.string(),
-          code: z.string(),
-        }),
-        500: z.object({
-          error: z.string(),
-          code: z.string(),
-        }),
+        200: TeamPerformanceResponseSchema,
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
       },
     },
     handler: async (request, reply) => {
@@ -243,12 +226,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
         range: z.enum(["7d", "30d", "90d"]).default("30d"),
       }),
       response: {
-        200: z.array(
-          z.object({
-            date: z.string(),
-            revenue: z.number(),
-          }),
-        ),
+        200: GetRevenuePerDayResponseSchema,
         401: ErrorSchema,
         403: ErrorSchema,
         404: ErrorSchema,
@@ -340,14 +318,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
       tags: ["Dashboard"],
       summary: "Get shop schedule",
       response: {
-        200: z.array(
-          z.object({
-            dayOfWeek: z.number(),
-            startTime: z.string().nullable(),
-            endTime: z.string().nullable(),
-            isClosed: z.boolean(),
-          }),
-        ),
+        200: z.array(ScheduleDaySchema),
         401: ErrorSchema,
         500: ErrorSchema,
       },
