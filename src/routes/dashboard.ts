@@ -10,6 +10,7 @@ import {
   ServiceNotFoundError,
 } from "@/errors/appointment";
 import { auth } from "@/lib/auth";
+import { verifyAuth } from "@/middlewares/verify-auth";
 import {
   CreateServiceBodySchema,
   DashboardMetricsSchema,
@@ -42,6 +43,8 @@ import { UpdateScheduleUseCase } from "@/usecases/UpdateSchedule";
 import { UpdateServiceUseCase } from "@/usecases/UpdateService";
 
 export const dashboardRoutes = (app: FastifyInstance) => {
+  app.addHook("preHandler", verifyAuth);
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/metrics",
@@ -58,21 +61,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const getMetrics = new GetMetricsUseCase();
 
         const result = await getMetrics.execute({
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(200).send(result);
@@ -102,21 +94,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const getRevenueMonthly = new GetRevenueMonthlyUseCase();
 
         const result = await getRevenueMonthly.execute({
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(200).send(result);
@@ -146,21 +127,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const getRevenueAnnual = new GetRevenueAnnualUseCase();
 
         const result = await getRevenueAnnual.execute({
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(200).send(result);
@@ -190,21 +160,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const getTeamPerformance = new GetTeamPerformanceUseCase();
 
         const result = await getTeamPerformance.execute({
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(200).send(result);
@@ -237,23 +196,12 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { range } = request.query;
 
         const getRevenuePerDay = new GetRevenuePerDayUseCase();
 
         const result = await getRevenuePerDay.execute({
-          role: session.user.role,
+          role: request.user.role,
           range,
         });
 
@@ -283,17 +231,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
+        //TODO: VERIFICAR O CARGO DO USUÁRIO
         const updateSchedule = new UpdateScheduleUseCase();
 
         await updateSchedule.execute({
@@ -366,21 +304,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const getAllAppointments = new GetAllAppointmentsUseCase();
 
         const result = await getAllAppointments.execute({
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(200).send(result);
@@ -409,21 +336,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const getAllServices = new GetAllServicesUseCase();
 
         const result = await getAllServices.execute({
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(200).send(result);
@@ -463,17 +379,6 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { name, price } = request.body;
 
         const createService = new CreateServiceUseCase();
@@ -481,7 +386,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
         const result = await createService.execute({
           name,
           price,
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(201).send(result);
@@ -525,17 +430,6 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { serviceId } = request.params;
         const { name, price } = request.body;
 
@@ -543,7 +437,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
 
         const result = await updateService.execute({
           serviceId,
-          role: session.user.role,
+          role: request.user.role,
           name,
           price,
         });
@@ -585,24 +479,13 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { serviceId } = request.params;
 
         const deleteService = new DeleteServiceUseCase();
 
         const result = await deleteService.execute({
           serviceId,
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(200).send(result);
@@ -645,17 +528,6 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { appointmentId } = request.params;
         const { serviceId, barberId, date, hour, status } = request.body;
 
@@ -663,7 +535,7 @@ export const dashboardRoutes = (app: FastifyInstance) => {
 
         const result = await updateAppointment.execute({
           appointmentId,
-          role: session.user.role,
+          role: request.user.role,
           serviceId,
           barberId,
           date,
@@ -722,24 +594,13 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { appointmentId } = request.params;
 
         const deleteAppointment = new DeleteAppointmentUseCase();
 
         const result = await deleteAppointment.execute({
           appointmentId,
-          role: session.user.role,
+          role: request.user.role,
         });
 
         return reply.status(200).send(result);
