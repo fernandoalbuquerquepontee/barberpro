@@ -1,4 +1,3 @@
-import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
@@ -9,7 +8,7 @@ import {
   CannotCreateAppointmentInThePastError,
   CannotCreateAppointmentInTheSameTimeError,
 } from "@/errors/appointment";
-import { auth } from "@/lib/auth";
+import { verifyAuth } from "@/middlewares/verify-auth";
 import {
   CreateAppointmentBodySchema,
   CreateAppointmentSchema,
@@ -31,6 +30,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
       tags: ["Appointments"],
       summary: "Create a new appointment",
       body: CreateAppointmentBodySchema,
+      preHandler: [verifyAuth],
       response: {
         201: CreateAppointmentSchema,
         400: ErrorSchema,
@@ -42,17 +42,6 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const createAppointment = new CreateAppointment();
 
         const result = await createAppointment.execute(request.body);
@@ -88,6 +77,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     schema: {
       tags: ["Appointments"],
       summary: "Get all appointments for a user",
+      preHandler: [verifyAuth],
       params: z.object({
         userId: z.string(),
       }),
@@ -100,17 +90,6 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { userId } = request.params as { userId: string };
 
         const getAppointmentsHistory = new GetAppointmentsHistory();
@@ -148,17 +127,6 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { date } = request.query;
 
         const getAvailableHours = new GetAvailableHours();
@@ -196,17 +164,6 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { date, time } = request.query;
 
         const getAvailableBarbers = new GetAvailableBarbers();
@@ -227,6 +184,7 @@ export const appointmentRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "PATCH",
     url: "/:appointmentId/cancel",
+    preHandler: [verifyAuth],
     schema: {
       tags: ["Appointments"],
       summary: "Cancel an appointment by changing its status to CANCELLED",
@@ -246,24 +204,13 @@ export const appointmentRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const { appointmentId } = request.params;
 
         const cancelAppointment = new CancelAppointmentUseCase();
 
         await cancelAppointment.execute({
           appointmentId,
-          userId: session.user.id,
+          userId: request.user.id,
         });
 
         return reply.status(200).send({

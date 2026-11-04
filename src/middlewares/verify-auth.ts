@@ -1,3 +1,4 @@
+// src/middlewares/verify-auth.ts
 import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
@@ -26,4 +27,16 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
 
   request.session = sessionData.session;
   request.user = sessionData.user;
+}
+
+export async function verifyAdmin(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  if (request.user.role !== "admin") {
+    return reply.status(403).send({
+      error: "Apenas administradores podem realizar esta ação",
+      code: "FORBIDDEN",
+    });
+  }
 }

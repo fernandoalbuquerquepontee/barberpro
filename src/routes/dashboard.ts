@@ -1,4 +1,3 @@
-import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
@@ -9,8 +8,7 @@ import {
   CannotCreateAppointmentInTheSameTimeError,
   ServiceNotFoundError,
 } from "@/errors/appointment";
-import { auth } from "@/lib/auth";
-import { verifyAuth } from "@/middlewares/verify-auth";
+import { verifyAdmin, verifyAuth } from "@/middlewares/verify-auth";
 import {
   CreateServiceBodySchema,
   DashboardMetricsSchema,
@@ -44,6 +42,7 @@ import { UpdateServiceUseCase } from "@/usecases/UpdateService";
 
 export const dashboardRoutes = (app: FastifyInstance) => {
   app.addHook("preHandler", verifyAuth);
+  app.addHook("preHandler", verifyAdmin);
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
@@ -265,17 +264,6 @@ export const dashboardRoutes = (app: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
         const getSchedule = new GetScheduleUseCase();
         const result = await getSchedule.execute({
           role: request.user.role,
