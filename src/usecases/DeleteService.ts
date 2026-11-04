@@ -1,3 +1,4 @@
+import { ServiceNotFoundError } from "@/errors/appointment";
 import { prisma } from "@/lib/db";
 
 interface OutputDto {
@@ -20,7 +21,7 @@ export class DeleteServiceUseCase {
     });
 
     if (!service) {
-      throw new Error("Serviço não encontrado.");
+      throw new ServiceNotFoundError();
     }
 
     await prisma.service.delete({

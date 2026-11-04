@@ -4,8 +4,10 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import {
+  AppointmentNotFoundError,
   CannotCreateAppointmentInThePastError,
   CannotCreateAppointmentInTheSameTimeError,
+  ServiceNotFoundError,
 } from "@/errors/appointment";
 import { auth } from "@/lib/auth";
 import {
@@ -548,23 +550,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
 
         return reply.status(200).send(result);
       } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message.includes("administradores")
-        ) {
-          return reply.status(403).send({
-            error: error.message,
-            code: "FORBIDDEN",
-          });
-        }
-
-        if (
-          error instanceof Error &&
-          error.message.includes("não encontrado")
-        ) {
+        if (error instanceof ServiceNotFoundError) {
           return reply.status(404).send({
             error: error.message,
-            code: "NOT_FOUND",
+            code: "SERVICE_NOT_FOUND",
           });
         }
 
@@ -618,23 +607,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
 
         return reply.status(200).send(result);
       } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message.includes("administradores")
-        ) {
-          return reply.status(403).send({
-            error: error.message,
-            code: "FORBIDDEN",
-          });
-        }
-
-        if (
-          error instanceof Error &&
-          error.message.includes("não encontrado")
-        ) {
+        if (error instanceof ServiceNotFoundError) {
           return reply.status(404).send({
             error: error.message,
-            code: "NOT_FOUND",
+            code: "SERVICE_NOT_FOUND",
           });
         }
 
@@ -711,23 +687,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
           });
         }
 
-        if (
-          error instanceof Error &&
-          error.message.includes("administradores")
-        ) {
-          return reply.status(403).send({
+        if (error instanceof AppointmentNotFoundError) {
+          return reply.status(409).send({
             error: error.message,
-            code: "FORBIDDEN",
-          });
-        }
-
-        if (
-          error instanceof Error &&
-          error.message.includes("não encontrada")
-        ) {
-          return reply.status(404).send({
-            error: error.message,
-            code: "NOT_FOUND",
+            code: "APPOINTMENT_NOT_FOUND",
           });
         }
 
@@ -791,13 +754,10 @@ export const dashboardRoutes = (app: FastifyInstance) => {
           });
         }
 
-        if (
-          error instanceof Error &&
-          error.message.includes("não encontrada")
-        ) {
+        if (error instanceof AppointmentNotFoundError) {
           return reply.status(404).send({
             error: error.message,
-            code: "NOT_FOUND",
+            code: "APPOINTMENT_NOT_FOUND",
           });
         }
 

@@ -1,6 +1,7 @@
 import { formatInTimeZone } from "date-fns-tz";
 
 import {
+  AppointmentNotFoundError,
   CannotCreateAppointmentInThePastError,
   CannotCreateAppointmentInTheSameTimeError,
 } from "@/errors/appointment";
@@ -39,7 +40,7 @@ export class UpdateAppointmentUseCase {
     });
 
     if (!appointment) {
-      throw new Error("Reserva não encontrada.");
+      throw new AppointmentNotFoundError();
     }
 
     const isRescheduling =

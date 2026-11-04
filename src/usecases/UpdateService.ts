@@ -1,3 +1,4 @@
+import { ServiceNotFoundError } from "@/errors/appointment";
 import { prisma } from "@/lib/db";
 
 interface OutputDto {
@@ -24,7 +25,7 @@ export class UpdateServiceUseCase {
     });
 
     if (!service) {
-      throw new Error("Serviço não encontrado.");
+      throw new ServiceNotFoundError();
     }
 
     return await prisma.service.update({

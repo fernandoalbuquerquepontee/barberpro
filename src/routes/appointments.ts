@@ -4,6 +4,8 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import {
+  AppointmentNotBelongsToUserError,
+  AppointmentNotFoundError,
   CannotCreateAppointmentInThePastError,
   CannotCreateAppointmentInTheSameTimeError,
 } from "@/errors/appointment";
@@ -269,6 +271,21 @@ export const appointmentRoutes = (app: FastifyInstance) => {
         });
       } catch (error) {
         app.log.error(error);
+
+        if (error instanceof AppointmentNotFoundError) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "APPOINTMENT_NOT_FOUND",
+          });
+        }
+
+        if (error instanceof AppointmentNotBelongsToUserError) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
         return reply.status(500).send({
           error: "Internal Server Error",
           code: "INTERNAL_SERVER_ERROR",

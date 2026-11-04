@@ -1,3 +1,4 @@
+import { AppointmentNotFoundError } from "@/errors/appointment";
 import { prisma } from "@/lib/db";
 
 interface OutputDto {
@@ -20,7 +21,7 @@ export class DeleteAppointmentUseCase {
     });
 
     if (!appointment) {
-      throw new Error("Reserva não encontrada.");
+      throw new AppointmentNotFoundError();
     }
 
     await prisma.appointment.delete({

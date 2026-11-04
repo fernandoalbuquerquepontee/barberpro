@@ -1,3 +1,7 @@
+import {
+  AppointmentNotBelongsToUserError,
+  AppointmentNotFoundError,
+} from "@/errors/appointment";
 import { prisma } from "@/lib/db";
 
 interface OutputDto {
@@ -18,11 +22,14 @@ export class CancelAppointmentUseCase {
     });
 
     if (!appointment) {
-      throw new Error("Reserva não encontrada.");
+      throw new AppointmentNotFoundError();
     }
 
     if (appointment.userId !== input.userId) {
-      throw new Error("Você não tem permissão para cancelar esta reserva.");
+      throw new AppointmentNotBelongsToUserError(
+        input.userId,
+        appointment.userId,
+      );
     }
 
     await prisma.appointment.update({
